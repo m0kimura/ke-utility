@@ -1,18 +1,18 @@
 'use strict';
-//#######1#########2#########3#########4#########5#########6#########7#########8#########9#########0
 const Fs=require('fs');
 const Os=require('os');
 const Cp=require('child_process');
 const Ev=require('events');
 const Hp=require('http');
+const Hps=require('https');
 const Qs=require('querystring');
-module.exports = class keUtility {
+module.exports=class keUtility {
   constructor () {
     this.Custom = {}; this.Event = {}; this.INFOJ = {};
     this.REC = []; this.SCREEN = {}; this.CFG = {};
     this.DICT = {};
     this.Fiber=require('fibers');
-    this.Mode = ""; this.error = ''; this.Related = '';
+    this.Mode = ''; this.error = ''; this.Related = '';
   }
 //
   version () {
@@ -22,7 +22,7 @@ module.exports = class keUtility {
 // info 環境情報の取り出し printenv
 //      ()==>CFG
   info (group) {
-    let me=this, d, o, a, i, k, p, f, t;
+    let me=this, d, o, a, k, p, f, t;
 //
 // mode, config, groupの決定
     let mode;
@@ -33,10 +33,10 @@ module.exports = class keUtility {
     else if(me.isExist(process.env.HOME+'/master.config')){
       mode='master'; me.CFG.config=process.env.HOME+'/master.config';
     }
-    else{mode="standalone";}
+    else{mode='standalone';}
     me.CFG.mode=mode;
     if(process.env.RUNCONFIG){me.CFG.config=process.env.RUNCONFIG;}
-    group=group||mode;
+    me.group = group || mode;
 //
 // 省略値設定
     me.CFG.dbdriver='knpostgre'; me.CFG.admin=''; me.CFG.psw=''; me.CFG.service='Gmail';
@@ -66,7 +66,7 @@ module.exports = class keUtility {
       me.infoLog('コンフィグファイルが読めない。file='+f); process.exit(1);
     }}else{me.infoLog('コンフィグファイルが読めない。file='+f); process.exit(1);}
 
-    a=me.CFG.directory.split("/"); me.CFG.project=a[3];
+    a=me.CFG.directory.split('/'); me.CFG.project=a[3];
     let ix; for(ix in o){if(mode==o[ix].mode){
       if(o[ix].group==a[3] || o[ix].group=='all'){
         f=''; t='';
@@ -134,8 +134,8 @@ module.exports = class keUtility {
         if(d[0].charCodeAt(0)==65534){d[0]=d[0].substr(1);} // bom除去fffe
       }
       for(i in d){switch(d[i]){
-       case '-HEAD': k='HEAD'; break; case '-BODY': k='BODY'; break; case '-FOOT': k='FOOT'; break;
-       default: f[k]+=d[i]+"\n";
+      case '-HEAD': k='HEAD'; break; case '-BODY': k='BODY'; break; case '-FOOT': k='FOOT'; break;
+      default: f[k]+=d[i]+"\n";
       }}
     }else{return false;}
 
@@ -147,7 +147,7 @@ module.exports = class keUtility {
         out+=me.parm(f.BODY, dt[i]);
       }
       out+=me.parm(f.FOOT, dt[ix]);
-    }else{me.error="#ERROR MEM frame="+fname; return false;}
+    }else{me.error='#ERROR MEM frame='+fname; return false;}
     return out;
   }
 //
@@ -159,16 +159,16 @@ module.exports = class keUtility {
     for(i=0; i<ln.length; i++){
       c=ln.substr(i, 1); cc=ln.substr(i, 2);
       switch(sw){
-       case 0:
+      case 0:
         switch(cc){
-          case '#{': sw=1; i++; key=''; break; case '%{': sw=2; i++; key=''; break;
-          case '${': sw=3; i++; key=''; break; case '&{': sw=4; i++; key=''; break;
-          default: if(cc>'%0' && cc<'%9'){sw=9;}else{out+=c;} break;
+        case '#{': sw=1; i++; key=''; break; case '%{': sw=2; i++; key=''; break;
+        case '${': sw=3; i++; key=''; break; case '&{': sw=4; i++; key=''; break;
+        default: if(cc>'%0' && cc<'%9'){sw=9;}else{out+=c;} break;
         } break;
-       case 1:
+      case 1:
         if(c=='}'){if(me.INFOJ[key]!==undefined){out+=me.INFOJ[key];} sw=0;}
         else{key+=c;} break;
-       case 2:
+      case 2:
         if(c=='}'){
           if(dt){if(dt[key]!==undefined){out+=dt[key];}}
           else{if(me.REC[ix]!==undefined){out+=me.REC[ix][key];}}
@@ -176,9 +176,9 @@ module.exports = class keUtility {
         }else{
           key+=c;
         } break;
-       case 3:
+      case 3:
         if(c=='}'){if(me.SCREEN[key]!==undefined){out+=me.SCREEN[key];} sw=0;}else{key+=c;} break;
-       case 4:
+      case 4:
         if(c=='}'){if(me.CFG[key]!==undefined){out+=me.CFG[key];} sw=0;}else{key+=c;} break;
       }
     }
@@ -195,15 +195,15 @@ module.exports = class keUtility {
         a[j]+=x[i]; ein=false;
       }else{
         switch(x[i]){
-         case '\\':
+        case '\\':
           if(sin){ein=true;}else{a[j]+=x[i];}
           break;
-         case '"':
+        case '"':
           if(sin){sin=false; j++;}else{sin=true; a[j]='';}
           break;
-         case ' ':
+        case ' ':
           if(sin){a[j]+=x[i];}else{if(win){j++; win=false;}} break;
-         default:
+        default:
           if(sin){a[j]+=x[i];}else{if(win){a[j]+=x[i];}else{win=true; a[j]=x[i];}} break;
         }
       }
@@ -212,7 +212,7 @@ module.exports = class keUtility {
   }
 //
   escape(txt) {
-   let o='', x; for(x in txt){if(txt[x]=="'"){o+="'";} o=o+txt[x];} return o;
+    let o='', x; for(x in txt){if(txt[x]=="'"){o+="'";} o=o+txt[x];} return o;
   }
 //
 //
@@ -232,7 +232,7 @@ module.exports = class keUtility {
   }
 //
   separate(txt, x) {
-    let out=[], i; out[0]=''; out[1]=''; f=true;
+    let out=[], i; out[0]=''; out[1]='';let f=true;
     for(i in txt){
       if(f && txt[i]==x){f=false;}else{if(f){out[0]+=txt[i];}else{out[1]+=txt[i];}}
     }
@@ -294,10 +294,11 @@ module.exports = class keUtility {
 // mkdir ディレクトリ作成
 //         (ディレクトリ名)==> true|false
   mkdir(dn) {
+    let me=this;
     try{return Fs.mkdirSync(dn);}catch(e){me.error=e; return false;}
   }
 //
-// checkDir ディレクトリがなければ作成　HOME以下
+// checkDir ディレクトリがなければ作成
 //
   checkDir(dirs, current) {
     let me=this, ix, dn; current=current||me.CFG.home+'/';
@@ -310,17 +311,17 @@ module.exports = class keUtility {
     let me=this, out=[]; me.error='';
     try{
       switch(type){
-       case 'file':
+      case 'file':
         Fs.readdirSync(path).forEach((file) => {
           if(Fs.statSync(path+file).isFile()){out.push(file);}
         });
         return out;
-       case 'dir':
+      case 'dir':
         Fs.readdirSync(path).forEach((file) => {
           if(!Fs.statSync(path+file).isFile()){out.push(file);}
         });
         return out;
-       default:
+      default:
         return Fs.readdirSync(path);
       }
     }catch(e){me.error=e; return {};}
@@ -329,14 +330,14 @@ module.exports = class keUtility {
 // stat ファイル属性の取得
 //      (ファイル名)==>属性オブジェクト
   stat(fn) {
-    let out={}, x, k, a;
+    let out={}, x, k;
     if(this.isExist(fn)){
-      x=Fs.statSync(fn); a=[]; for(k in x){
+      x=Fs.statSync(fn); for(k in x){
         switch(k){
-          case 'atime': case 'mtime': case 'ctime':
-           out[k]=this.date('YMDHIS', x[k]);
+        case 'atime': case 'mtime': case 'ctime':
+          out[k]=this.date('YMDHIS', x[k]);
           break;
-         default: out[k]=x[k]; break;
+        default: out[k]=x[k]; break;
         }
       }
       return out;
@@ -352,12 +353,12 @@ module.exports = class keUtility {
       if(d){rc=JSON.parse(d);}
     }else{me.error='file not found f='+fname; return false;}
     if(ret){return rc;}else{me.REC=rc; return me.REC.length;}
-   }
+  }
 //
 // getText テキストファイル読み込み
 //           (ファイル名, リターンフラグ)==>完了フラグ|オブジェクト[]
   getText(fname, ret) {
-    let me=this, d, p=0, i=0, rc, out=[]; me.error='';
+    let me=this, d, p=0, i=0, out=[]; me.error='';
     try{
       d=me.getFs(fname);
       if(d){while(p>-1){
@@ -392,7 +393,7 @@ module.exports = class keUtility {
 //       ()
   getIp(id, ver) {
     let me=this; ver=ver||'ipv4';
-    let a=K.getIPs()[ver];
+    let a=me.getIPs()[ver];
     let i; for( i in a){
       if(!id){return a[i].address;}
       else{if(id==a[i].name){return a[i].address;}}
@@ -407,8 +408,8 @@ module.exports = class keUtility {
       x=nif[k][j];
       if(!x.internal){
         switch(x.family){
-          case "IPv4": o.ipv4.push({name: k, address: x.address}); break;
-          case "IPv6": o.ipv6.push({name: k, address: x.address}); break;
+        case 'IPv4': o.ipv4.push({name: k, address: x.address}); break;
+        case 'IPv6': o.ipv6.push({name: k, address: x.address}); break;
         }
       }
     }}
@@ -418,14 +419,16 @@ module.exports = class keUtility {
 // shell シェルコマンドの実行
 //       (コマンド)==>実行結果
   shell(cmd) {
-    let me=this, rc;
-    let wid=me.ready();
-    Cp.exec(cmd, (err, stdout, stderr) => {
+    let me=this;
+    let wid=this.ready();
+    let rc;
+    Cp.exec(cmd, (err, stdout) => {
       if(!err){me.stdout=stdout; rc=true;}
       else{me.infoEx(err, err.code); rc=false;}
       me.post(wid);
     });
     me.wait();
+    return rc;
   }
 //
   on(ev, proc) {
@@ -439,6 +442,7 @@ module.exports = class keUtility {
   }
 //
   off(ev) {
+    let me=this;
     if(this.Custom[ev]){this.Custom[ev].removeListener(ev, () => {delete me.Custom[ev];});}
     else{this.error='event not found ev='+ev; return false;}
     return true;
@@ -453,10 +457,9 @@ module.exports = class keUtility {
 // sleep 時間待ち
 //       (ミリセカンド)
   sleep(ms) {
-    let me=this;
-    let wid=me.ready();
-    setTimeout(() => {me.post(wid);}, ms);
-    me.wait();
+    let wid=this.ready();
+    setTimeout(() => {this.post(wid);}, ms);
+    this.wait();
   }
 //###
 //LOG MANAGEMENT
@@ -466,7 +469,7 @@ module.exports = class keUtility {
     return false;
   }
 // debug, info, notice, warn, error, crit, alert, emerg
-  sevierLog(msg, e) { // 重大エラー　呼び出し、終了
+  sevierLog(msg, e) { // 重大エラー
     let me=this, d={}, l; d.msg=msg;
     if(e){d=me.analyze(e); d.msg=msg;}else{d=me.getPos(msg);} l='sevier';
     this.putlog(l, d);
@@ -483,7 +486,7 @@ module.exports = class keUtility {
     me.notify(l, 'システム情報 ['+l+'] ', d);
   }
   warnLog(msg) { // 警告メッセージ
-    let me=this, d=this.getPos(msg), l='warn';
+    let d=this.getPos(msg), l='warn';
     this.putlog(l, d);
   }
   infoLog(msg, e) { // エラーかどうかはアプリで判断
@@ -492,17 +495,16 @@ module.exports = class keUtility {
     this.putlog(l, d);
   }
   debugLog(msg) { // デバッグ用記録
-    let me=this, d=this.getPos(msg), l='debug';
+    let d=this.getPos(msg), l='debug';
     this.putlog(l, d);
   }
   justLog(msg) { // ログのみ
-    let me=this, d=this.getPos(msg), l='debug';
+    let d=this.getPos(msg), l='debug';
     this.putlog(l, d);
   }
 //
   putlog(level, lines) {
-    let me=this, tbl={debug: 0, info: 1, warn: 2, notice: 3, error: 4, sevier: 5};
-    let f=(tbl[me.CFG.level]>tbl[level]);
+    let me=this;
     let eproc = (err) => {if(err){console.log(err);}};
     let out, k; for(k in lines){
       out=me.date('Y/M/D H:I:S')+' ['+level+'] '+k+': '+lines[k]+'\n';
@@ -523,21 +525,28 @@ module.exports = class keUtility {
 //
 // getRequest
 //
-  getRequest(op, data) {
+  getRequest(op, json, secure) {
     let me=this;
-    op=op||{}; op.hostname=op.hostname||'localhost'; op.port=op.port||'80';
+    op=op||{}; op.hostname=op.hostname||'localhost';
     op.path=op.path||'/';
 
     let body;
-    let wid=me.ready();
-    Hp.get(op, (res) => {
+    let wid=this.ready();
+    let obj;
+    if(secure){obj=Hps;}else{obj=Hp;}
+    obj.get(op, (res) => {
       body=''; res.setEncoding('utf8');
-      res.on('data', (chunk) => {body+=chunk;});
-      res.on('end', () => {me.post(wid);});
-    }).on('error', (e) => {me.error=e.message; me.post(wid);});
+      res.on('data', (chunk) => {body+=chunk;
+      });
+      res.on('end', () => {me.post(wid);
+      });
+    }).on('error', (e) => {
+      console.log('error:'+e);
+      me.error=e.message; me.post(wid);
+    });
     me.wait();
     try{
-      if(data=="json"){return JSON.parse(body);}
+      if(json){return JSON.parse(body);}
       else{return body;}
     }catch(e){
       me.error=e; return {};
@@ -546,23 +555,32 @@ module.exports = class keUtility {
 //
 //
 //
-  postRequest(op, data) {
+  postRequest(op, data, secure) {
     let me=this;
-    op=op||{}; op.hostname=op.hostname||'localhost'; op.port=op.port||'8085';
+    op=op||{}; op.hostname=op.hostname||'localhost';
     op.path=op.path||'/'; op.method='POST';
-    op.headers={'Content-Type': 'application/x-www-form-urlencoded'};
-
-    let sd=Qs.stringify(data);
+//    let sd=Qs.stringify(data);
+    let sd=encodeURIComponent(JSON.stringify(data));
+    op.headers=op.headers||{};
+    op.headers['Content-Length']=sd.length;
+    console.log(op);
+    console.log(sd);
     let body, req;
     let wid=me.ready();
-    req=Hp.request(op, (res) => {
+    let o;
+    if (secure) {o=Hps;}else{o=Hp;}
+    req=o.request(op, (res) => {
       body=''; res.setEncoding('utf8');
       res.on('data', (chunk) => {body+=chunk;});
       res.on('end', () => {me.post(wid);});
     }).on('error', (e) => {me.error=e.message; me.post(wid);});
     req.write(sd); req.end();
     me.wait();
-    try{return JSON.parse(body);}catch(e){me.error=e; return {};}
+    try{
+      return JSON.parse(body);
+    }catch(e){
+      me.error=e; return {'body': body};
+    }
   }
 //
   getPos(msg) {
