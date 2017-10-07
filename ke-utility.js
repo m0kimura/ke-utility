@@ -1,4 +1,6 @@
 'use strict';
+/* global FIBERS */
+global.FIBERS=require('fibers');
 const Fs=require('fs');
 const Os=require('os');
 let Cp=require('child_process');
@@ -15,13 +17,12 @@ module.exports=class keUtility {
  * @constructor
  */
   constructor () {
-    this.Fibers=require('fibers');
     this.Custom = {}; this.Event = {}; this.INFOJ = {};
     this.REC = []; this.SCREEN = {}; this.CFG = {};
     this.DICT = {};
     this.Mode = ''; this.error = ''; this.Related = '';
   }
-/**
+  /**
  * バージョン表示
  * @return {Void} none
  * @method
@@ -29,7 +30,7 @@ module.exports=class keUtility {
   version () {
     console.log('1.0-7727');
   }
-/**
+  /**
  * 環境情報の取り出しとプロパティ[me.CFG]への設定
  * @param  {String} group 選択対象のグループを指定可
  * @return {Void}       none
@@ -79,8 +80,8 @@ module.exports=class keUtility {
       if(d){o=JSON.parse(d);}
       else{me.infoLog('コンフィグファイルが読めない。file='+f); process.exit(1);}
     }catch(e){
-      me.infoLog('コンフィグファイルが読めない。file='+f); process.exit(1);
-    }}else{me.infoLog('コンフィグファイルが読めない。file='+f); process.exit(1);}
+        me.infoLog('コンフィグファイルが読めない。file='+f); process.exit(1);
+      }}else{me.infoLog('コンフィグファイルが読めない。file='+f); process.exit(1);}
 
     a=me.CFG.directory.split('/'); me.CFG.project=a[3];
     let ix; for(ix in o){if(mode==o[ix].mode){
@@ -96,7 +97,7 @@ module.exports=class keUtility {
     if(mode=='master'){me.infoLog('CONFIG>>'+JSON.stringify(me.CFG));}
     me.Mode=mode;
   }
-/**
+  /**
  * ローカル設定ファイル(json)の読み込み
  * @param  {Object} op オプション({fn: ファイルパス, [infoj: true/false, stop: true/false]})
  * @return {Object}    環境設定情報/false（結果） ->me.error
@@ -114,7 +115,7 @@ module.exports=class keUtility {
     }
     if(rc){return JSON.parse(rc);}else{return {};}
   }
-/**
+  /**
  * 辞書の検索
  * @param  {String} key   対象ワード
  * @param  {String} field 変換言語
@@ -127,38 +128,38 @@ module.exports=class keUtility {
     try{rc=me.DICT[key][field];}catch(e){me.error=e; rc=key;}
     return rc;
   }
-/**
+  /**
  * バッチ用メインルーチン定義
  * @param  {Function} proc ルーチン処理
  * @param  {Object}   op   環境変数(CFG)の置き換え
  * @method
  */
   MAIN(proc, op) {
-    this.Fibers(function(me){
+    FIBERS(function(me){
       op=op||{};
       me.info(op.group);
       for(var k in op){me.CFG[k]=op[k];}
       proc(me, this);
     }).run(this);
   }
-/**
+  /**
  * セッションルーチンの手続き
  * @param  {Function} proc セッションルーチン
  * @method
  */
   PROC(proc) {
-    this.Fibers(function(me){
+    FIBERS(function(me){
       proc(me, this);
     }).run(this);
   }
-/**
+  /**
  * 起動引数の取り出し
  * @param  {Integer} n (n個目)==>値
  * @return {String}    指定されたn個目の引数
  * @method
  */
   argv(n) {return process.argv[n+2];}
-/**
+  /**
  * テンプレートの呼び出し展開
  * @param  {String} fname テンプレートファイルパス
  * @param  {Object} dt    ローカル変数データ
@@ -177,12 +178,13 @@ module.exports=class keUtility {
         if(d[0].charCodeAt(0)==65279){d[0]=d[0].substr(1);} // bom除去feff
         if(d[0].charCodeAt(0)==65534){d[0]=d[0].substr(1);} // bom除去fffe
       }
-      for(i in d){switch(d[i]){
-      case '-HEAD': k='HEAD'; break; case '-BODY': k='BODY'; break; case '-FOOT': k='FOOT'; break;
-      default: f[k]+=d[i]+NL;
-      }}
+      for(i in d){
+        switch(d[i]){
+        case '-HEAD': k='HEAD'; break; case '-BODY': k='BODY'; break; case '-FOOT': k='FOOT'; break;
+        default: f[k]+=d[i]+NL;
+        }
+      }
     }else{return false;}
-
     let url;
     if(f.BODY){
       out=me.parm(f.HEAD, dt[ix]);
@@ -194,7 +196,7 @@ module.exports=class keUtility {
     }else{me.error='#ERROR MEM frame='+fname; return false;}
     return out;
   }
-/**
+  /**
  * パラメータを展開する
  * #{}<-INFOJ, %{}<-REC, ${}<-SCREEN &{}<- CFG
  * @param  {String} ln  展開対象データ
@@ -234,7 +236,7 @@ module.exports=class keUtility {
     }
     return out;
   }
-/**
+  /**
  * 文字列をスペースデリミタで分解
  * @param  {String} x 対象データ
  * @return {Array}    分解結果
@@ -263,7 +265,7 @@ module.exports=class keUtility {
     }
     return a;
   }
-/**
+  /**
  * 空白（数はいくつでもよい）でワードを分離する("による包括と\によるエスケープが可)
  * @param  {String} txt 入力文字列
  * @return {Array}      ワード（分離後データ）配列
@@ -296,7 +298,7 @@ module.exports=class keUtility {
     if(e){out.push(e);}
     return out;
   }
-/**
+  /**
  * カッコ内を抽出
  * @param  {String} txt 入力文字列
  * @return {String}     抽出文字列
@@ -314,7 +316,7 @@ module.exports=class keUtility {
     }
     return '';
   }
-/**
+  /**
  * base64変換
  * @param  {String} txt    対象テキストデータ
  * @param  {String} method encode|decode
@@ -330,7 +332,7 @@ module.exports=class keUtility {
     }
     return s;
   }
-/**
+  /**
  * 指定された文字移行の文字列の取り出し
  * @param  {String} txt 対象文字列
  * @param  {String} x   指定文字
@@ -342,7 +344,7 @@ module.exports=class keUtility {
     for(i=txt.length-1; i>-1; i--){if(txt[i]==x){return i;}}
     return -1;
   }
-/**
+  /**
  * パスからディレクトリ部の取り出し
  * @param  {String} txt 対象パス
  * @return {String}     結果ディレクトリ部分
@@ -354,7 +356,7 @@ module.exports=class keUtility {
   pullDir(txt) {
     let i=this.lastOf(txt, '/'); return txt.substr(0, i+1);
   }
-/**
+  /**
  * ァイル名部分を取り出し
  * @param  {String} x パス
  * @return {String}   ファイル名部分
@@ -363,7 +365,7 @@ module.exports=class keUtility {
   filepart(x) {
     let p=x.lastIndexOf('/'); if(p<0){return x;} p++; return x.substr(p);
   }
-/**
+  /**
  * 接尾拡張子を取り出し
  * @param  {String} x パス
  * @return {String}   拡張子
@@ -372,7 +374,7 @@ module.exports=class keUtility {
   modifier(x) {
     let p=x.lastIndexOf('.'); if(p<0){return '';} p++; return x.substr(p);
   }
-/**
+  /**
  * 文字列置換
  * @param  {String} txt 対象フィールド全体
  * @param  {String} x   置換対象文字列
@@ -383,7 +385,7 @@ module.exports=class keUtility {
   repby(txt, x, y) {
     let out='', i; for(i in txt){if(txt[i]==x){out+=y;}else{out+=txt[i];}} return out;
   }
-/**
+  /**
  * 分離符の前後に分ける
  * @param  {String} txt 対象文字列
  * @param  {String} x   分離符
@@ -397,10 +399,7 @@ module.exports=class keUtility {
     }
     return out;
   }
-//
-// date
-//      (編集文字列)==>編集日付
-/**
+  /**
  * 日付編集(YMD, ymd, HIS, his, W, w)
  * @param  {String} t    編集文字列
  * @param  {String} time 日付時間文字列、省略時は現在
@@ -420,7 +419,7 @@ module.exports=class keUtility {
     t=t.replace(/w/, ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'][d.getDay()]);
     return t;
   }
-/**
+  /**
  * 今日の日付編集
  * @param  {String} f 編集文字列,省略時Y/M/D
  * @return {String}   編集結果
@@ -429,7 +428,7 @@ module.exports=class keUtility {
   today(f) {
     f=f||'Y/M/D'; return this.date(f);
   }
-/**
+  /**
  * 今の時刻編集
  * @param  {String} f 編集文字列、省略時H:I:S
  * @return {String}   編集結果
@@ -438,7 +437,7 @@ module.exports=class keUtility {
   now(f) {
     f=f||'H:I:S'; return this.date(f);
   }
-/**
+  /**
  * 日付演算
  * @param  {String} days 加算日数
  * @param  {String} from 対象日付
@@ -451,10 +450,7 @@ module.exports=class keUtility {
     d.setTime(d.getTime()+(days*86400000));
     return me.date(form, d);
   }
-//
-// isExist
-//         (ファイル名)==> true|false
-/**
+  /**
  * 現在のunixタイムを取得する
  * @return {Integer} 現在タイムスタンプ(ミリ秒)
  * @method
@@ -463,7 +459,7 @@ module.exports=class keUtility {
     let date=new Date();
     return date.getTime();
   }
-/**
+  /**
  * 保存された時刻からの経過時間がlimitを超えているかを判断
  * @param  {Integer} area  UnixTimeの保存領域
  * @param  {Integer} limit 限界時間(秒)、省略時60秒
@@ -480,7 +476,7 @@ module.exports=class keUtility {
     }
     return false;
   }
-/**
+  /**
  * Arrayオブジェクトのソート
  * @param  {Array}   data   ソート対象データ
  * @param  {Array}   keys   キー項目配列
@@ -503,7 +499,7 @@ module.exports=class keUtility {
     }
     return data;
   }
-/**
+  /**
  * ファイル存在確認
  * @param  {String} fn ファイルパス
  * @return {Boolean}   true/false
@@ -512,7 +508,7 @@ module.exports=class keUtility {
   isExist(fn) {
     try{return Fs.existsSync(fn);}catch(e){return false;}
   }
-/**
+  /**
  * ディレクトリ作成
  * @param  {String} dn ディレクトパス
  * @return {Bool}      true/false
@@ -522,10 +518,7 @@ module.exports=class keUtility {
     let me=this;
     try{return Fs.mkdirSync(dn);}catch(e){me.error=e; return false;}
   }
-//
-// checkDir
-//
-/**
+  /**
  * ディレクトリがなければ作成
  * @param  {String} dirs    ディレクトリ名
  * @param  {String} current 作成場所,省略時$HOME
@@ -536,7 +529,7 @@ module.exports=class keUtility {
     let me=this, ix, dn; current=current||me.CFG.home+'/';
     for(ix in dirs){dn=current+dirs[ix];if(!me.isExist(dn)){me.mkdir(dn);}}
   }
-/**
+  /**
  * ディレクトリリスト
  * @param  {String} path ディレクトリパス
  * @param  {String} type file/dir/省略両方
@@ -562,7 +555,7 @@ module.exports=class keUtility {
       }
     }catch(e){me.error=e; return {};}
   }
-/**
+  /**
  * ファイル属性の取得
  * @param  {String} fn ファイルパス
  * @return {Object}    結果属性
@@ -582,7 +575,7 @@ module.exports=class keUtility {
       return out;
     }else{return false;}
   }
-/**
+  /**
  * オブジェクト形式ファイル読み込み(RECインターフェイス)
  * @param  {String} fname   ファイルパス
  * @param  {String} ret     結果種別true(returnで返す)/false(me.RECに編集)
@@ -597,7 +590,7 @@ module.exports=class keUtility {
     }else{me.error='file not found f='+fname; return false;}
     if(ret){return rc;}else{me.REC=rc; return me.REC.length;}
   }
-/**
+  /**
  * テキストファイル読み込み
  * @param  {String} fname   テキストファイルパス
  * @param  {Array} ret      結果場所指定(true:return/false:me.REC)
@@ -617,7 +610,7 @@ module.exports=class keUtility {
       else{me.REC=[]; for(i in out){me.REC[i]={}; me.REC[i].data=out[i];} return me.REC.length;}
     }catch(e){me.error=e; return false;}
   }
-/**
+  /**
  * JSONファイル読み込み
  * @param  {String} fn JSONファイルパス
  * @return {Object}    読み込み結果オブジェクト
@@ -629,7 +622,7 @@ module.exports=class keUtility {
       rc=this.getFs(fn); if(rc){return JSON.parse(rc);}else{return false;}
     }catch(e){this.error=e;}
   }
-/**
+  /**
  * ファイル読み込み
  * @param  {String} fn ファイルパス
  * @return {String} 読み込み結果
@@ -641,7 +634,7 @@ module.exports=class keUtility {
     if(this.isExist(fn)){d=Fs.readFileSync(fn).toString(); return d;}
     else{this.error='file not found file='+fn; return false;}
   }
-/**
+  /**
  * 自分のIPアドレスを取得する
  * @param  {String} id  デバイスID(ex. wlan0, lan0...)省略時は全件
  * @param  {String} ver バージョン(ipv4/ipv6)省略時ipv4
@@ -672,7 +665,7 @@ module.exports=class keUtility {
     }}
     return o;
   }
-/**
+  /**
  * シェルコマンドを実行して、me.stdoutに標準出力を返す
  * @param  {String} cmd 実行コマンド
  * @return {Bool}       処理結果(true/false)
@@ -690,7 +683,7 @@ module.exports=class keUtility {
     }
     return rc;
   }
-/**
+  /**
  * イベント監視
  * @param  {String} ev     イベント名
  * @param  {Function} proc 発火時実行処理
@@ -701,7 +694,7 @@ module.exports=class keUtility {
     this.Custom.ev=new Ev.EventEmitter();
     this.Custom.ev.on(ev, proc);
   }
-/**
+  /**
  * イベント通知
  * @param  {String}   ev   イベント名
  * @param  {Anything} arg1 通知情報
@@ -714,7 +707,7 @@ module.exports=class keUtility {
     if(this.Custom[ev]){this.Custom[ev].emit(ev, arg1, arg2, arg3); return true;}
     else{this.error='event not found ev='+ev; return false;}
   }
-/**
+  /**
  * イベント監視取り消し
  * @param  {String} ev イベント名
  * @return {Bool}      true/false
@@ -726,26 +719,26 @@ module.exports=class keUtility {
     else{this.error='event not found ev='+ev; return false;}
     return true;
   }
-/**
+  /**
  * 逐次制御開始
  * @return {Integer} 監視番号
  * @method
  */
   ready() {
     var id=Math.random();
-    this.Event[id]=this.Fibers.current;
+    this.Event[id]=FIBERS.current;
     return id;
   }
-/**
+  /**
  * 逐次制御待ち合わせ
  * @return {Anything} 待ち合わせ解除時引き渡し情報
  * @method
  */
   wait() {
-    var rc=this.Fibers.yield();
+    var rc=FIBERS.yield();
     return rc;
   }
-/**
+  /**
  * 逐次制御解除
  * @param  {Integer}  id 監視番号
  * @param  {Anything} dt 引き渡しデータ
@@ -753,7 +746,7 @@ module.exports=class keUtility {
  * @method
  */
   post(id, dt) {this.Event[id].run(dt); delete this.Event[id];}
-/**
+  /**
  * 時間待ち合わせ
  * @param  {Integer} ms 待ち合わせ時間（ミリ秒）
  * @return {Void}       none
@@ -764,7 +757,7 @@ module.exports=class keUtility {
     setTimeout(() => {this.post(wid);}, ms);
     this.wait();
   }
-/**
+  /**
  * デバッグモードを調べる
  * @return {Boolean} true/false
  * @method
@@ -773,7 +766,7 @@ module.exports=class keUtility {
     if(!this.CFG){return true;} if(this.CFG.mode=='debug'){return true;}
     return false;
   }
-/**
+  /**
  * グローバルエラーを補足
  * @return {void} none
  * @method
@@ -784,7 +777,7 @@ module.exports=class keUtility {
       me.sevierLog(message, 'File:'+file+', line:'+line);
     };
   }
-/**
+  /**
  * 重大エラーメッセージ
  * @param  {string} msg エラーメッセージ
  * @param  {String} e   エラー内容
@@ -797,7 +790,7 @@ module.exports=class keUtility {
     this.putlog(l, d);
     me.notify(l, 'システムエラー通知 ['+l+'] ',d);
   }
-/**
+  /**
  * エラーメッセージ
  * @param  {String} msg エラーメッセージ
  * @param  {String} e   エラー内容
@@ -809,7 +802,7 @@ module.exports=class keUtility {
     if(e){d=me.analyze(e); d.msg=msg;}else{d=me.getPos(msg);} l='error';
     this.putlog(l, d);
   }
-/**
+  /**
  * 注意メッセージ
  * @param  {String} msg 注意メッセージ
  * @return {Void}       none
@@ -820,7 +813,7 @@ module.exports=class keUtility {
     this.putlog(l, d);
     me.notify(l, 'システム情報 ['+l+'] ', d);
   }
-/**
+  /**
  * 警告メッセージ
  * @param  {String} msg 警告メッセージ
  * @return {Void}       none
@@ -830,7 +823,7 @@ module.exports=class keUtility {
     let d=this.getPos(msg), l='warn';
     this.putlog(l, d);
   }
-/**
+  /**
  * 一般メッセージ
  * @param  {String} msg メッセージ
  * @param  {String} e   エラー内容など
@@ -842,7 +835,7 @@ module.exports=class keUtility {
     if(e){d=me.analyze(e); d.msg=msg;}else{d.msg=msg;} l='info';
     this.putlog(l, d);
   }
-/**
+  /**
  * デバッグ情報
  * @param  {String} msg メッセージ
  * @return {Void}       none
@@ -852,7 +845,7 @@ module.exports=class keUtility {
     let d=this.getPos(msg), l='debug';
     this.putlog(l, d);
   }
-/**
+  /**
  * ログのみ出力
  * @param  {String} msg メッセージ
  * @return {Void}       none
@@ -862,7 +855,7 @@ module.exports=class keUtility {
     let d=this.getPos(msg), l='debug';
     this.putlog(l, d);
   }
-/**
+  /**
  * ログファイル出力
  * @param  {String} level メッセージレベル（sevier/error/info/warn/debug/notice）
  * @param  {Array} lines  メッセージ配列
@@ -878,7 +871,7 @@ module.exports=class keUtility {
       console.log(out);
     }
   }
-/**
+  /**
  * コミュニケータにwebhook(起動環境CFG.communicatorでPOSTリクエスト)
  * @param  {String} level   メッセージレベル
  * @param  {String} subject メッセージタイトル
@@ -895,7 +888,7 @@ module.exports=class keUtility {
       if(!rc){console.log('NOTIFY ERROR');}
     }
   }
-/**
+  /**
  * HTTPリクエストGETメソッド
  * @param  {Object} op     HTTP URLオプション{hostname, port, path}
  * @param  {Bool} json     JSONデータtrue/false
@@ -929,7 +922,7 @@ module.exports=class keUtility {
       me.error=e; return {};
     }
   }
-/**
+  /**
  * HTTPリクエストPOSTメソッド
  * @param  {Object} op     URLオブジェクト{hostname, port, path, search...}
  * @param  {Object} data   POSTデータ
@@ -976,4 +969,5 @@ module.exports=class keUtility {
     }
     return out;
   }
+  exit() {process.exit();}
 };
