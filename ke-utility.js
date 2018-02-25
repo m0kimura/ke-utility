@@ -84,7 +84,7 @@ module.exports=class keUtility {
       }}else{me.infoLog('コンフィグファイルが読めない。file='+f); process.exit(1);}
 
     a=me.CFG.directory.split('/'); me.CFG.project=a[3];
-    let ix; for(ix in o){if(mode==o[ix].mode){
+    let ix; for(ix in o){if(o[ix].mode==mode || o[ix].mode=='always'){
       if(o[ix].group==a[3] || o[ix].group=='all'){
         f=''; t='';
         if(o[ix].valid){a=o[ix].valid.split(':'); f=a[0]; t=a[1];}
