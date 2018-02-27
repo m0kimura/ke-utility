@@ -842,8 +842,12 @@ module.exports=class keUtility {
  * @method
  */
   debugLog(msg) { // デバッグ用記録
-    let d=this.getPos(msg), l='debug';
-    this.putlog(l, d);
+    const me=this;
+    let d, l;
+    if(me.isDebug()){
+      d=[msg]; l='debug';
+      this.putlog(l, d);
+    }
   }
   /**
  * ログのみ出力
