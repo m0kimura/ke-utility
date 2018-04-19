@@ -867,12 +867,16 @@ module.exports=class keUtility {
  * @method
  */
   putlog(level, lines) {
-    let me=this;
-    let eproc = (err) => {if(err){console.log(err);}};
-    let out, k; for(k in lines){
-      out=me.date('Y/M/D H:I:S')+' ['+level+'] '+k+': '+lines[k]+'\n';
-      if(me.CFG.mode=='master'){Fs.appendFile(me.CFG.log, out, eproc());}
-      console.log(out);
+    let me=this, out, k;
+    try{
+      for(k in lines){
+        out=me.date('Y/M/D H:I:S')+' ['+level+'] '+k+': '+lines[k]+'\n';
+        if(me.CFG.mode=='master'){Fs.appendFileSync(me.CFG.log, out);}
+        console.log('#875', out);
+      }
+    }catch(e){
+      console.log('#878', out);
+      console.log('#879 err', e);
     }
   }
   /**
