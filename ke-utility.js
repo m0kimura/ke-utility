@@ -872,11 +872,11 @@ module.exports=class keUtility {
       for(k in lines){
         out=me.date('Y/M/D H:I:S')+' ['+level+'] '+k+': '+lines[k]+'\n';
         if(me.CFG.mode=='master'){Fs.appendFileSync(me.CFG.log, out);}
-        console.log('#875', out);
+        console.log(out);
       }
     }catch(e){
-      console.log('#878', out);
-      console.log('#879 err', e);
+      console.log(out);
+      console.log('error:', e);
     }
   }
   /**
