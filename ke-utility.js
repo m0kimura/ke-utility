@@ -934,11 +934,12 @@ module.exports=class keUtility {
  * HTTPリクエストPOSTメソッド
  * @param  {Object} op     URLオブジェクト{hostname, port, path, search...}
  * @param  {Object} data   POSTデータ
- * @param  {Bool} secure   HTTPS true/false
+ * @param  {Bool} secure   HTTPS true/[false]
+ * @param  {Bool} json     JSON true/[false]
  * @return {Object}        JSONデータ/空
  * @method
  */
-  postRequest(op, data, secure) {
+  postRequest(op, data, secure, json) {
     let me=this;
     op=op||{}; op.hostname=op.hostname||'localhost';
     op.path=op.path||'/'; op.method='POST';
@@ -959,7 +960,11 @@ module.exports=class keUtility {
     req.write(sd); req.end();
     me.wait();
     try{
-      return JSON.parse(body);
+      if(json){
+        return JSON.parse(body);
+      }else{
+        return body;
+      }
     }catch(e){
       me.error=e; return {'body': body};
     }
