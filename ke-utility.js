@@ -90,7 +90,9 @@ module.exports=class keUtility {
         if(o[ix].valid){a=o[ix].valid.split(':'); f=a[0]; t=a[1];}
         if(!f){f='000101';} if(!t){t='991231';}
         if(me.today('YMD')>=f && me.today('YMD')<=t){
-          for(k in o[ix]){me.CFG[k]=o[ix][k];}
+          for(k in o[ix]){
+            if(k!='mode' && k!='group'){me.CFG[k]=o[ix][k];}
+          }
         }
       }
     }}
