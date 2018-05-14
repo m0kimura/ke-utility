@@ -17,9 +17,48 @@ module.exports=class keUtility {
  * @constructor
  */
   constructor () {
-    this.Custom = {}; this.Event = {}; this.INFOJ = {};
-    this.REC = []; this.SCREEN = {}; this.CFG = {};
+    /**
+     * カスタムイベントを管理するための領域です。
+     * @type {Object} Custom
+     * @property
+     */
+    this.Custom = {};
+    /**
+     * 逐次制御用管理テーブル(For FIBERS)
+     * @type {Object} Event
+     * @property
+     */
+    this.Event = {};
+    /**
+     * パラメータ展開用基本情報テーブル
+     * @type {Object} INFOJ
+     * @property
+     */
+    this.INFOJ = {};
+    /**
+     * データベースレコード管理用テーブル
+     * @type {Array} REC
+     * @property
+     */
+    this.REC = [];
+    /**
+     * 画面入出力インターフェイステーブル
+     * @type {Object} SCREEN
+     * @property
+     */
+    this.SCREEN = {};
+    /**
+     * 外部入力設定情報テーブル
+     * @type {Object} CFG
+     * @property
+     */
+    this.CFG = {};
+    /**
+     * 変換辞書テーブル
+     * @type {Object} DICT
+     */
     this.DICT = {};
+
     this.Mode = ''; this.error = ''; this.Related = '';
   }
   /**
@@ -28,7 +67,12 @@ module.exports=class keUtility {
  * @method
  */
   version () {
-    console.log('1.0-7727');
+    try{
+      let a=JSON.parse(this.getJson('./package.json'));
+      console.log(a.version);
+    }catch(e){
+      console.log('error ', e);
+    }
   }
   /**
  * 環境情報の取り出しとプロパティ[me.CFG]への設定
@@ -80,8 +124,8 @@ module.exports=class keUtility {
       if(d){o=JSON.parse(d);}
       else{me.infoLog('コンフィグファイルが読めない。file='+f); process.exit(1);}
     }catch(e){
-        me.infoLog('コンフィグファイルが読めない。file='+f); process.exit(1);
-      }}else{me.infoLog('コンフィグファイルが読めない。file='+f); process.exit(1);}
+      me.infoLog('コンフィグファイルが読めない。file='+f); process.exit(1);
+    }}else{me.infoLog('コンフィグファイルが読めない。file='+f); process.exit(1);}
 
     a=me.CFG.directory.split('/'); me.CFG.project=a[3];
     let ix; for(ix in o){if(o[ix].mode==mode || o[ix].mode=='always'){
@@ -112,10 +156,10 @@ module.exports=class keUtility {
     let rc;
     try{
       rc=this.getFs(fn); if(infoj){this.INFOJ=JSON.parse(rc);}else{this.CFG=JSON.parse(rc);}
+      if(rc){return JSON.parse(rc);}else{return {};}
     }catch(e){
       if(stop){me.sevierLog(e);}else{me.error=e; return {};}
     }
-    if(rc){return JSON.parse(rc);}else{return {};}
   }
   /**
  * 辞書の検索
