@@ -13,10 +13,12 @@ module.exports=class keUtility {
 
 /**
  * コンストラクタ
+ * @param  {Bool}   main mainProcedureをコンストラクト時に実行する
+ * @param  {Object} op   this.CFGを置き換えるパラメタ
  * @return {Void} none
  * @constructor
  */
-  constructor () {
+  constructor (main, op) {
     /**
      * カスタムイベントを管理するための領域です。
      * @type {Object} Custom
@@ -60,6 +62,11 @@ module.exports=class keUtility {
     this.DICT = {};
 
     this.Mode = ''; this.error = ''; this.Related = '';
+
+    if(main){
+      let me=this;
+      this.MAIN(function(){this.mainProcedure(me, this);}, op);
+    }
   }
   /**
  * バージョン表示
@@ -187,6 +194,14 @@ module.exports=class keUtility {
       for(var k in op){me.CFG[k]=op[k];}
       proc(me, this);
     }).run(this);
+  }
+  /**
+   * 自動実行時に実行される処理をオーバーライドする
+   * @return {Void} none
+   * @method
+   */
+  mainProcedure(){
+    console.log('This should be overrided!!');
   }
   /**
  * セッションルーチンの手続き
